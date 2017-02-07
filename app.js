@@ -10,9 +10,9 @@ ns.router.routes = {
 ns.layout.define('app', {
     app: {
         'appBox@': {
-            patchedWrapper: {
+            // patchedWrapper: {
                 'patchedView': true
-            }
+            // }
         }
     }
     // app: {
@@ -86,68 +86,27 @@ ns.Model.define('list', {
     }
 });
 
-ns.View.define('app', {
-    models: {
-        'app': {
-            'ns-model-changed' : function() {
-                this.invalidate();
-            }
-        }
-    },
-    events: {
-        'ns-view-show': 'onshow'
-    },
-    methods: {
-        onshow() {
-            console.log('SHOW APP version ', this.getModelData('app', '.version'));
-        }
-    }
-});
-ns.Model.define('app', {
-    methods: {
-        request() {
-            var promise = new Vow.Promise();
-
-            // setTimeout(function() {
-                promise.fulfill({version: 1});
-            // }.bind(this), 1000);
-
-            return promise.then(function(data) {
-                this.setData(data);
-            }, this);
-        }
-    }
-});
+ns.View.define('app');
 ns.View.define('patchedWrapper');
 
-ns.ViewReact.define('patchedView', {
+ns.View.define('patchedView', {
     methods: {
         patchLayout() {
-            // const model = ns.Model.getValid('patchedModel');
-
-            // if (!model) {
-            //     return 'patchedEmpty';
-            // }
-
             return 'patched';
         }
     }
 });
 
 ns.layout.define('patched', {
-    'patchedViewContent@': {
+    'patchedViewContentBox@': {
         'patchedViewContent&': {
             'patchedSubview': true
         }
     }
 });
 
-ns.layout.define('patchedEmpty', {
-    'patchedViewContent@': {}
-});
-
-ns.ViewReact.define('patchedViewContent', {
-    models: ['patchedModel', 'patchedSubmodel'],
+ns.View.define('patchedViewContent', {
+    models: ['patchedModel'],
     events: {
         'ns-view-init': () => {
             console.log('INIT VIEW');
@@ -184,24 +143,13 @@ ns.ViewReact.define('patchedViewContent', {
 ns.Model.define('patchedModel', {
     methods: {
         request() {
+            // this.setData({loaded: true});
             return Vow.fulfill({});
         }
-        // request: function() {
-        //     var promise = new Vow.Promise();
-
-        //     setTimeout(function() {
-        //         promise.fulfill({loadedData: true});
-        //     }.bind(this), 1000);
-
-        //     return promise.then(function(data) {
-        //         this.setData(data);
-        //     }, this);
-        // }
     }
 });
 
-ns.ViewReact.define('patchedSubview', {
-    // models: ['patchedSubmodel'],
+ns.View.define('patchedSubview', {
     events: {
         'ns-view-init': () => {
             console.log('INIT SUB');
@@ -209,8 +157,8 @@ ns.ViewReact.define('patchedSubview', {
         'ns-view-htmlinit': () => {
             console.log('HTMLINIT SUB');
         },
-        'ns-view-show': () => {
-            console.log('SHOW SUB', document.querySelector('.patched-view-child'));
+        'ns-view-show': function() {
+            console.log('SHOW SUB', this.node);
         }
     },
     component: {
@@ -232,23 +180,7 @@ ns.ViewReact.define('patchedSubview', {
     }
 });
 
-ns.Model.define('patchedSubmodel', {
-    methods: {
-        request: function() {
-            var promise = new Vow.Promise();
-
-            setTimeout(function() {
-                promise.fulfill({loadedData: true});
-            }.bind(this), 500);
-
-            return promise.then(function(data) {
-                this.setData(data);
-            }, this);
-        }
-    }
-});
-
-ns.ViewReact.define('todoapp', {
+ns.View.define('todoapp', {
     models: ['list'],
     component: {
         render: function() {
@@ -262,7 +194,7 @@ ns.ViewReact.define('todoapp', {
         }
     }
 });
-ns.ViewReact.define('header', {
+ns.View.define('header', {
     component: {
         handleSubmit: function(e) {
             e.preventDefault();

@@ -1,3 +1,21 @@
 include "node_modules/noscript/yate/noscript.yate"
 include "node_modules/noscript-bosphorus/noscript-bosphorus.yate"
 include "node_modules/noscript-react/yate/ns.view-react.yate"
+
+match .patchedViewContent ns-view-async-content {
+    <div>
+        <div>LOADING VIEW'S MODEL</div>
+        apply . ns-view-desc
+    </div>
+}
+
+match .patchedViewContent ns-view-content {
+    <div>
+        <div>VIEW</div>
+        apply . ns-view-desc
+    </div>
+}
+
+match .patchedSubview ns-view-content {
+    <div>SUBVIEW</div>
+}
