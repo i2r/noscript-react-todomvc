@@ -9,16 +9,23 @@ ns.router.routes = {
 
 ns.layout.define('app', {
     app: {
-        'todoapp&': {
-            'header': true,
-            'boxList@': {
-                'list': true
-            },
-            'boxFooter@': {
-                'footer': true
+        'appBox@': {
+            patchedWrapper: {
+                'patchedView': true
             }
         }
     }
+    // app: {
+    //     'todoapp&': {
+    //         'header': true,
+    //         'boxList@': {
+    //             'list': true
+    //         },
+    //         'boxFooter@': {
+    //             'footer': true
+    //         }
+    //     }
+    // }
 });
 
 ns.Model.define('todo', {
@@ -66,7 +73,7 @@ ns.Model.define('list', {
                     case 'active':
                         return !todo.get('.done');
                     case 'completed':
-                        return todo.get('.done')
+                        return todo.get('.done');
                 }
             });
         },
@@ -79,7 +86,168 @@ ns.Model.define('list', {
     }
 });
 
-ns.View.define('app');
+ns.View.define('app', {
+    models: {
+        'app': {
+            'ns-model-changed' : function() {
+                this.invalidate();
+            }
+        }
+    },
+    events: {
+        'ns-view-show': 'onshow'
+    },
+    methods: {
+        onshow() {
+            console.log('SHOW APP version ', this.getModelData('app', '.version'));
+        }
+    }
+});
+ns.Model.define('app', {
+    methods: {
+        request() {
+            var promise = new Vow.Promise();
+
+            // setTimeout(function() {
+                promise.fulfill({version: 1});
+            // }.bind(this), 1000);
+
+            return promise.then(function(data) {
+                this.setData(data);
+            }, this);
+        }
+    }
+});
+ns.View.define('patchedWrapper');
+
+ns.ViewReact.define('patchedView', {
+    methods: {
+        patchLayout() {
+            // const model = ns.Model.getValid('patchedModel');
+
+            // if (!model) {
+            //     return 'patchedEmpty';
+            // }
+
+            return 'patched';
+        }
+    }
+});
+
+ns.layout.define('patched', {
+    'patchedViewContent@': {
+        'patchedViewContent&': {
+            'patchedSubview': true
+        }
+    }
+});
+
+ns.layout.define('patchedEmpty', {
+    'patchedViewContent@': {}
+});
+
+ns.ViewReact.define('patchedViewContent', {
+    models: ['patchedModel', 'patchedSubmodel'],
+    events: {
+        'ns-view-init': () => {
+            console.log('INIT VIEW');
+        },
+        'ns-view-htmlinit': () => {
+            console.log('HTMLINIT VIEW');
+        },
+        'ns-view-show': () => {
+            console.log('SHOW VIEW');
+        }
+    },
+    component: {
+        render() {
+            if (this.props.view.isLoading()) {
+                return (
+                    <div className="patched-view-loading">
+                        LOADING VIEW'S MODEL
+                    </div>
+                );
+            }
+
+            return (
+                <div className="patched-view">
+                    <div className="patched-view-child">
+                        VIEW →
+                    </div>
+                    {this.createChildren()}
+                </div>
+            );
+        }
+    }
+});
+
+ns.Model.define('patchedModel', {
+    methods: {
+        request() {
+            return Vow.fulfill({});
+        }
+        // request: function() {
+        //     var promise = new Vow.Promise();
+
+        //     setTimeout(function() {
+        //         promise.fulfill({loadedData: true});
+        //     }.bind(this), 1000);
+
+        //     return promise.then(function(data) {
+        //         this.setData(data);
+        //     }, this);
+        // }
+    }
+});
+
+ns.ViewReact.define('patchedSubview', {
+    // models: ['patchedSubmodel'],
+    events: {
+        'ns-view-init': () => {
+            console.log('INIT SUB');
+        },
+        'ns-view-htmlinit': () => {
+            console.log('HTMLINIT SUB');
+        },
+        'ns-view-show': () => {
+            console.log('SHOW SUB', document.querySelector('.patched-view-child'));
+        }
+    },
+    component: {
+        render() {
+            if (this.props.view.isLoading()) {
+                return (
+                    <div className="patched-subview-loading">
+                        LOADING SUB'S MODEL
+                    </div>
+                );
+            }
+
+            return (
+                <div className="patched-subview">
+                    SUBVIEW
+                </div>
+            );
+        }
+    }
+});
+
+ns.Model.define('patchedSubmodel', {
+    methods: {
+        request: function() {
+            var promise = new Vow.Promise();
+
+            setTimeout(function() {
+                promise.fulfill({loadedData: true});
+            }.bind(this), 500);
+
+            return promise.then(function(data) {
+                this.setData(data);
+            }, this);
+        }
+    }
+});
+
 ns.ViewReact.define('todoapp', {
     models: ['list'],
     component: {
@@ -90,7 +258,7 @@ ns.ViewReact.define('todoapp', {
                         ? this.createChildren()
                         : <h1>Loading</h1>}
                 </section>
-            )
+            );
         }
     }
 });
@@ -102,7 +270,7 @@ ns.ViewReact.define('header', {
             if (todo) {
                 ns.Model.get('list').appendTodo(todo);
             }
-            this.refs.input.value = "";
+            this.refs.input.value = '';
         },
         render: function() {
             return (
@@ -154,7 +322,7 @@ ns.ViewReact.define('todo', {
     },
     methods: {
         update: function() {
-            ns.page.go()
+            ns.page.go();
         }
     },
     component: {
@@ -170,7 +338,7 @@ ns.ViewReact.define('todo', {
                 this.refs.name.focus();
             }
         },
-        onCheckTodo: function(e) {
+        onCheckTodo: function() {
             var checked = !this.state.checked;
             this.setState({
                 checked: checked
@@ -243,7 +411,7 @@ ns.ViewReact.define('footer', {
                                 <li key={filter}>
                                     <a className={filter === currentFilter ? 'selected' : ''} href={ns.router.baseDir + '?filter=' + filter}>{filter}</a>
                                 </li>
-                            )
+                            );
                         })}
                     </ul>
                 </footer>
