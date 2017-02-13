@@ -29,10 +29,19 @@ ns.ViewReact.define('patchedView', {
 });
 
 ns.layout.define('patched', {
-    'patchedViewContent@': {
+    'patchedViewBox@': {
         'patchedViewContent&': {
             'patchedSubview': true
         }
+    }
+});
+
+const SubComponent = React.createClass({
+    componentDidMount() {
+        console.log('MOUNT SUBCOMPONENT');
+    },
+    render() {
+        return <div>SUBCOMPONENT</div>;
     }
 });
 
@@ -50,6 +59,9 @@ ns.ViewReact.define('patchedViewContent', {
         }
     },
     component: {
+        componentDidMount() {
+            console.log('MOUNT VIEW');
+        },
         render() {
             if (this.props.view.isLoading()) {
                 return (
@@ -74,6 +86,7 @@ ns.ViewReact.define('patchedViewContent', {
 ns.Model.define('patchedModel', {
     methods: {
         request() {
+            this.setData({ loaded: true });
             return Vow.fulfill({});
         }
     }
@@ -87,11 +100,14 @@ ns.ViewReact.define('patchedSubview', {
         'ns-view-htmlinit': () => {
             console.log('HTMLINIT SUB');
         },
-        'ns-view-show': function() {
-            console.log('SHOW SUB', this.node);
+        'ns-view-show': () => {
+            console.log('SHOW SUB');
         }
     },
     component: {
+        componentDidMount() {
+            console.log('MOUNT SUBVIEW');
+        },
         render() {
             if (this.props.view.isLoading()) {
                 return (
@@ -104,6 +120,7 @@ ns.ViewReact.define('patchedSubview', {
             return (
                 <div className="patched-subview">
                     SUBVIEW
+                    <SubComponent/>
                 </div>
             );
         }
